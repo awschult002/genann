@@ -9,6 +9,11 @@ artificial neural networks (ANN) in C. Its primary focus is on being simple,
 fast, reliable, and hackable. It achieves this by providing only the necessary
 functions and little extra.
 
+This project is an upgrade to the original project to move away from the sigmoid
+activation, and towards new ReLu and Squared ReLu functions used in larger LLM.
+Also, moving away from traditional ANN models and into newer 1-bit architectures
+which allow this model to run exceptionally well on CPU.
+
 ## Features
 
 - **C99 with no dependencies**.
