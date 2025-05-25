@@ -121,11 +121,17 @@ void train_and() {
     double input[4][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
     double output[4] = {0, 0, 0, 1};
 
+
     genann *ann = genann_init(2, 0, 0, 1);
+
+    /* Take a random guess at the ANN weights. */
+    for (int i = 0; i < ann->total_weights; ++i) {
+        ann->weight[i] += ((double)rand())/RAND_MAX-0.5;
+    }
 
     int i, j;
 
-    for (i = 0; i < 50; ++i) {
+    for (i = 0; i < 50000; ++i) {
         for (j = 0; j < 4; ++j) {
             genann_train(ann, input[j], output + j, .8);
         }
@@ -147,10 +153,14 @@ void train_or() {
 
     genann *ann = genann_init(2, 0, 0, 1);
     genann_randomize(ann);
+        /* Take a random guess at the ANN weights. */
+        for (int i = 0; i < ann->total_weights; ++i) {
+            ann->weight[i] += ((double)rand())/RAND_MAX-0.5;
+        }
 
     int i, j;
 
-    for (i = 0; i < 50; ++i) {
+    for (i = 0; i < 5000; ++i) {
         for (j = 0; j < 4; ++j) {
             genann_train(ann, input[j], output + j, .8);
         }
@@ -171,15 +181,20 @@ void train_xor() {
     double input[4][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
     double output[4] = {0, 1, 1, 0};
 
-    genann *ann = genann_init(2, 4, 4, 1);
+    genann *ann = genann_init(2, 1, 2, 1);
+
+        /* Take a random guess at the ANN weights. */
+        for (int i = 0; i < ann->total_weights; ++i) {
+            ann->weight[i] += ((double)rand())/RAND_MAX-0.5;
+        }
 
     int i, j;
 
-    for (i = 0; i < 5000; ++i) {
+    for (i = 0; i < 50000; ++i) {
         for (j = 0; j < 4; ++j) {
-            genann_train(ann, input[j], output + j, 3);
+            genann_train(ann, input[j], output + j, 0.8);
         }
-        /* printf("%1.2f ", xor_score(ann)); */
+         /* printf("%1.2f ", xor_score(ann)); */
     }
 
     ann->activation_output = genann_act_threshold;

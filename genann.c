@@ -147,8 +147,8 @@ genann *genann_init(int inputs, int hidden_layers, int hidden, int outputs) {
 
     genann_randomize(ret);
 
-    ret->activation_hidden = genann_act_sigmoid_cached;
-    ret->activation_output = genann_act_sigmoid_cached;
+    ret->activation_hidden = genann_act_relu2;
+    ret->activation_output = genann_act_relu2;
 
     genann_init_sigmoid_lookup(ret);
 
@@ -300,8 +300,8 @@ void genann_train(genann const *ann, double const *inputs, double const *desired
         /* Set output layer deltas. */
             for (j = 0; j < ann->outputs; ++j) 
             {
-                *d++ = (*t++ - *o)*(*o);
-                        o++;
+                *d++ = (*t - *o)?(*t - *o)*(*o):0.01;
+                        t++,o++;
             }
     }
 
@@ -333,7 +333,7 @@ void genann_train(genann const *ann, double const *inputs, double const *desired
 
             for (j = 0; j < ann->outputs; ++j) 
             {
-                *d++ = delta*(*o);
+                *d++ = (delta > 0) ? delta*(*o): 0.01;
                         o++;
             }
         }

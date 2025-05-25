@@ -7,13 +7,13 @@
 int main(int argc, char *argv[])
 {
     printf("GENANN example 2.\n");
-    printf("Train a small ANN to the XOR function using random search.\n");
+    printf("Train a small ANN to the XNOR function using random search.\n");
 
     srand(time(0));
 
     /* Input and expected out data for the XOR function. */
     const double input[4][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
-    const double output[4] = {0, 0, 0, 1};
+    const double output[4] = {1, 0, 0, 1};
     int i;
 
     /* New network with 2 inputs,

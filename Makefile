@@ -1,7 +1,7 @@
 CFLAGS = -Wall -Wshadow -O3 -g -march=native
 LDLIBS = -lm
 
-all: check example1 example2 example3 example4
+all: check example1 example2 example3 example4 example5
 
 sigmoid: CFLAGS += -Dgenann_act=genann_act_sigmoid_cached
 sigmoid: all
@@ -24,6 +24,10 @@ example2: example2.o genann.o
 example3: example3.o genann.o
 
 example4: example4.o genann.o
+
+example5: example5.o genann.o
+example6: example6.o genann.o
+
 
 
 clean:
