@@ -47,10 +47,10 @@ typedef struct genann {
     /* How many inputs, outputs, and hidden neurons. */
     int inputs, hidden_layers, hidden, outputs;
 
-    /* Which activation function to use for hidden neurons. Default: gennann_act_sigmoid_cached*/
+    /* Which activation function to use for hidden neurons. Default: * gennann_relu2*/
     genann_actfun activation_hidden;
 
-    /* Which activation function to use for output. Default: gennann_act_sigmoid_cached*/
+    /* Which activation function to use for output. Default: gennann_act_relu2*/
     genann_actfun activation_output;
 
     /* Total number of weights, and size of weights buffer. */
@@ -94,12 +94,6 @@ void genann_train(genann const *ann, double const *inputs, double const *desired
 /* Saves the ann. */
 void genann_write(genann const *ann, FILE *out);
 
-void genann_init_sigmoid_lookup(const genann *ann);
-double genann_act_sigmoid(const genann *ann, double a);
-double genann_act_sigmoid_cached(const genann *ann, double a);
-double genann_act_threshold(const genann *ann, double a);
-double genann_act_linear(const genann *ann, double a);
-double genann_act_relu(const genann *ann, double a);
 double genann_act_relu2(const genann *ann, double a);
 
 

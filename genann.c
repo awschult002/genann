@@ -33,8 +33,8 @@
 #include <string.h>
 
 #ifndef genann_act
-#define genann_act_hidden genann_act_hidden_indirect
-#define genann_act_output genann_act_output_indirect
+#define genann_act_hidden genann_act_relu2
+#define genann_act_output genann_act_relu2
 #else
 #define genann_act_hidden genann_act
 #define genann_act_output genann_act
@@ -42,16 +42,7 @@
 
 #define LOOKUP_SIZE 4096
 
-double genann_act_hidden_indirect(const struct genann *ann, double a) {
-    return ann->activation_hidden(ann, a);
-}
 
-double genann_act_output_indirect(const struct genann *ann, double a) {
-    return ann->activation_output(ann, a);
-}
-
-const double sigmoid_dom_min = -15.0;
-const double sigmoid_dom_max = 15.0;
 double interval;
 double lookup[LOOKUP_SIZE];
 
@@ -67,48 +58,7 @@ double lookup[LOOKUP_SIZE];
 #endif
 
 
-double genann_act_sigmoid(const genann *ann unused, double a) {
-    if (a < -45.0) return 0;
-    if (a > 45.0) return 1;
-    return 1.0 / (1 + exp(-a));
-}
-
-void genann_init_sigmoid_lookup(const genann *ann) {
-        const double f = (sigmoid_dom_max - sigmoid_dom_min) / LOOKUP_SIZE;
-        int i;
-
-        interval = LOOKUP_SIZE / (sigmoid_dom_max - sigmoid_dom_min);
-        for (i = 0; i < LOOKUP_SIZE; ++i) {
-            lookup[i] = genann_act_sigmoid(ann, sigmoid_dom_min + f * i);
-        }
-}
-
-double genann_act_sigmoid_cached(const genann *ann unused, double a) {
-    assert(!isnan(a));
-
-    if (a < sigmoid_dom_min) return lookup[0];
-    if (a >= sigmoid_dom_max) return lookup[LOOKUP_SIZE - 1];
-
-    size_t j = (size_t)((a-sigmoid_dom_min)*interval+0.5);
-
-    /* Because floating point... */
-    if (unlikely(j >= LOOKUP_SIZE)) return lookup[LOOKUP_SIZE - 1];
-
-    return lookup[j];
-}
-
-double genann_act_linear(const struct genann *ann unused, double a) {
-    return a;
-}
-
-double genann_act_threshold(const struct genann *ann unused, double a) {
-    return a > 0;
-}
-
-double genann_act_relu(const struct genann *ann unused, double a) {
-    return (a > 0) ? a : 0;
-}
-
+// squared relu activation
 double genann_act_relu2(const struct genann *ann unused, double a) {
     return (a > 0) ? a*a : 0;
 }
@@ -150,7 +100,6 @@ genann *genann_init(int inputs, int hidden_layers, int hidden, int outputs) {
     ret->activation_hidden = genann_act_relu2;
     ret->activation_output = genann_act_relu2;
 
-    genann_init_sigmoid_lookup(ret);
 
     return ret;
 }
