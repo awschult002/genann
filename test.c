@@ -171,11 +171,11 @@ void train_xor() {
     double input[4][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
     double output[4] = {0, 1, 1, 0};
 
-    genann *ann = genann_init(2, 1, 2, 1);
+    genann *ann = genann_init(2, 4, 4, 1);
 
     int i, j;
 
-    for (i = 0; i < 500; ++i) {
+    for (i = 0; i < 5000; ++i) {
         for (j = 0; j < 4; ++j) {
             genann_train(ann, input[j], output + j, 3);
         }

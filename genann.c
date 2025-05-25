@@ -105,6 +105,15 @@ double genann_act_threshold(const struct genann *ann unused, double a) {
     return a > 0;
 }
 
+double genann_act_relu(const struct genann *ann unused, double a) {
+    return (a > 0) ? a : 0;
+}
+
+double genann_act_relu2(const struct genann *ann unused, double a) {
+    return (a > 0) ? a*a : 0;
+}
+
+
 genann *genann_init(int inputs, int hidden_layers, int hidden, int outputs) {
     if (hidden_layers < 0) return 0;
     if (inputs < 1) return 0;
@@ -289,17 +298,11 @@ void genann_train(genann const *ann, double const *inputs, double const *desired
 
 
         /* Set output layer deltas. */
-        if (genann_act_output == genann_act_linear ||
-                ann->activation_output == genann_act_linear) {
-            for (j = 0; j < ann->outputs; ++j) {
-                *d++ = *t++ - *o++;
+            for (j = 0; j < ann->outputs; ++j) 
+            {
+                *d++ = (*t++ - *o)*(*o);
+                        o++;
             }
-        } else {
-            for (j = 0; j < ann->outputs; ++j) {
-                *d++ = (*t - *o) * *o * (1.0 - *o);
-                ++o; ++t;
-            }
-        }
     }
 
 
@@ -328,8 +331,11 @@ void genann_train(genann const *ann, double const *inputs, double const *desired
                 delta += forward_delta * forward_weight;
             }
 
-            *d = *o * (1.0-*o) * delta;
-            ++d; ++o;
+            for (j = 0; j < ann->outputs; ++j) 
+            {
+                *d++ = delta*(*o);
+                        o++;
+            }
         }
     }
 
