@@ -249,7 +249,7 @@ void genann_train(genann const *ann, double const *inputs, double const *desired
         /* Set output layer deltas. */
             for (j = 0; j < ann->outputs; ++j) 
             {
-                *d++ = (*t - *o)?(*t - *o)*(*o):0.01;
+                *d++ = (*t - *o)?(*t - *o)*(*o):0.01; // leaky relu??
                         t++,o++;
             }
     }

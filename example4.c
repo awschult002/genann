@@ -13,7 +13,16 @@ const char *iris_data = "example/iris.data";
 
 double *input, *class;
 int samples;
-const char *class_names[] = {"Iris-setosa", "Iris-versicolor", "Iris-virginica"};
+enum classes{
+    IRIS_SETOSA,
+    IRIS_VERSICOLOR,
+    IRIS_VIRGINICA,
+    classes_length
+};
+const char *class_names[classes_length] = {
+    [IRIS_SETOSA] = "Iris-setosa", 
+    [IRIS_VERSICOLOR] = "Iris-versicolor",
+    [IRIS_VIRGINICA] = "Iris-virginica"};
 
 void load_data() {
     /* Load the iris data-set. */
@@ -33,15 +42,15 @@ void load_data() {
     printf("Loading %d data points from %s\n", samples, iris_data);
 
     /* Allocate memory for input and output data. */
-    input = malloc(sizeof(double) * samples * 4);
-    class = malloc(sizeof(double) * samples * 3);
+    input = malloc(sizeof(double) * samples * 4); // 4 inputs
+    class = malloc(sizeof(double) * samples); // only 1 output 
 
     /* Read the file into our arrays. */
     int i, j;
     for (i = 0; i < samples; ++i) {
         double *p = input + i * 4;
-        double *c = class + i * 3;
-        c[0] = c[1] = c[2] = 0.0;
+        double *c = class + i;
+        *c = 0.0;
 
         if (fgets(line, 1024, in) == NULL) {
             perror("fgets");
@@ -56,8 +65,8 @@ void load_data() {
 
         split[strlen(split)-1] = 0;
         if (strcmp(split, class_names[0]) == 0) {c[0] = 1.0;}
-        else if (strcmp(split, class_names[1]) == 0) {c[1] = 1.0;}
-        else if (strcmp(split, class_names[2]) == 0) {c[2] = 1.0;}
+        else if (strcmp(split, class_names[1]) == 0) {c[0] = 2.0;}
+        else if (strcmp(split, class_names[2]) == 0) {c[0] = 3.0;}
         else {
             printf("Unknown class %s.\n", split);
             exit(1);
@@ -73,7 +82,7 @@ void load_data() {
 int main(int argc, char *argv[])
 {
     printf("GENANN example 4.\n");
-    printf("Train an ANN on the IRIS dataset using backpropagation.\n");
+    printf("Train an ANN on the IRIS dataset using random search.\n");
 
     srand(time(0));
 
@@ -82,38 +91,57 @@ int main(int argc, char *argv[])
 
     /* 4 inputs.
      * 1 hidden layer(s) of 4 neurons.
-     * 3 outputs (1 per class)
+     * 1 outputs (1 per class)
      */
-    genann *ann = genann_init(4, 1, 4, 3);
+    genann *ann = genann_init(4, 1, 4, 1);
 
     int i, j;
-    int loops = 5000;
-
-    /* Train the network with backpropagation. */
-    printf("Training for %d loops over data.\n", loops);
-    for (i = 0; i < loops; ++i) {
-        for (j = 0; j < samples; ++j) {
-            genann_train(ann, input + j*4, class + j*3, .01);
+    int count = 0;
+    double err,last_err = 0.0;
+    do {
+        ++count;
+        if (count % 1000 == 0) {
+            /* We're stuck, start over. */
+            genann_randomize(ann);
+            last_err = 1000;
         }
-        /* printf("%1.2f ", xor_score(ann)); */
+
+        genann *save = genann_copy(ann);
+
+        /* Take a random guess at the ANN weights. */
+        for (i = 0; i < ann->total_weights; ++i) {
+            ann->weight[i] += ((double)rand())/RAND_MAX-0.5;
+        }
+
+        /* See how we did. */
+        for (int j = 0; j < samples; ++j) {
+            err += pow(*genann_run(ann, input + j*4) - class[j], 2.0);
+        }
+
+            /* Keep these weights if they're an improvement. */
+            if (err < last_err) {
+                genann_free(save);
+                last_err = err;
+            } else {
+                genann_free(ann);
+                ann = save;
+            }
+
+        } while (err > 0.01);
+
+        int correct = 0;
+        for (j = 0; j < samples; ++j) {
+            const double *guess = genann_run(ann, input + j*4);
+            correct += (*guess == class[j])? 1 : 0;
+        }
+
+        printf("%d/%d correct (%0.1f%%).\n", correct, samples, (double)correct / samples * 100.0);
+
+
+
+        genann_free(ann);
+        free(input);
+        free(class);
+
+        return 0;
     }
-
-    int correct = 0;
-    for (j = 0; j < samples; ++j) {
-        const double *guess = genann_run(ann, input + j*4);
-        if (class[j*3+0] == 1.0) {if (guess[0] > guess[1] && guess[0] > guess[2]) ++correct;}
-        else if (class[j*3+1] == 1.0) {if (guess[1] > guess[0] && guess[1] > guess[2]) ++correct;}
-        else if (class[j*3+2] == 1.0) {if (guess[2] > guess[0] && guess[2] > guess[1]) ++correct;}
-        else {printf("Logic error.\n"); exit(1);}
-    }
-
-    printf("%d/%d correct (%0.1f%%).\n", correct, samples, (double)correct / samples * 100.0);
-
-
-
-    genann_free(ann);
-    free(input);
-    free(class);
-
-    return 0;
-}
